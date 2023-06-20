@@ -75,7 +75,7 @@ async def api_embeddings(req: EmbeddingsRequest):
     embeddings = models.encode_embeddings(model, tokenizer, [req.input])
     resp = api_resp_embeddings.copy()
     resp["model"] = model_name
-    resp["data"]["embedding"] = embeddings[0]
+    resp["data"][0]["embedding"] = embeddings[0]
     return resp
 
 @app.get("/health", tags=["health"])
