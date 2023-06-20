@@ -12,17 +12,13 @@ def mean_pooling(model_output, attention_mask):
 def encode_embeddings(model, tokenizer, texts):
     # Tokenize sentences
     encoded_input = tokenizer(texts, padding=True, truncation=True, return_tensors='pt')
-
     # Compute token embeddings
     with torch.no_grad():
         model_output = model(**encoded_input, return_dict=True)
-
     # Perform pooling
     embeddings = mean_pooling(model_output, encoded_input['attention_mask'])
-
     # Normalize embeddings
     embeddings = F.normalize(embeddings, p=2, dim=1)
-    
     return embeddings
 
 def get_model(model_name):
