@@ -1,3 +1,5 @@
 sentence-transformers==2.2.2
+transformers==4.30.2
+torch==2.0.1
 protobuf==4.23.3
 pyvi==0.1.1
