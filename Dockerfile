@@ -9,8 +9,12 @@ RUN cd /workspace && python -m venv myenv && bash -c 'source myenv/bin/activate 
 RUN cd /workspace \
     && bash -c "source myenv/bin/activate && python -c 'from transformers import AutoTokenizer, AutoModel; cache_dir=\"/workspace/cache\"; model_name=\"sentence-transformers/multi-qa-mpnet-base-cos-v1\"; model=AutoModel.from_pretrained(model_name, cache_dir=cache_dir); tokenizer=AutoTokenizer.from_pretrained(model_name, cache_dir=cache_dir)'"
 
-FROM python:3.9-alpine as txapi-runtime
+FROM python:3.9-slim as txapi-runtime
 LABEL org.opencontainers.image.authors="Thanh Nguyen <btnguyen2k (at) gmail(dot)com>"
-#COPY --from=txapi-build /usr/local/lib/python3.9 /usr/local/lib/python3.9
-COPY --from=txapi-build /workspace /workspace
+ARG USERNAME=api
+ARG USERID=1000
+RUN useradd --system --create-home --home-dir /workspace --shell /bin/bash --uid $USERID $USERNAME
+COPY --from=txapi-build --chown=$USERNAME /workspace /workspace
+USER $USERNAME
 WORKDIR /workspace
+
