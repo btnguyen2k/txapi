@@ -1,7 +1,7 @@
 /profiling-*.txt
 
 # Byte-compiled / optimized / DLL files
-cache/
+cache*/
 __pycache__/
 *.py[cod]
 *$py.class
