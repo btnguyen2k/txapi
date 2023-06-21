@@ -64,6 +64,11 @@ def openai_model_metadata(model_name):
             return openai_models_meta[model_alias[model_name]]
     return None
 
+def openai_token_counts(model_name, input):
+    enc = tiktoken.encoding_for_model(model_name)
+    ids = enc.encode(input)
+    return len(ids)
+
 #----------------------------------------------------------------------#
 
 ## HuggingFace ##
