@@ -44,7 +44,21 @@ import models
 api_resp_no_model = {
     "error": {
         "message": "The specified model does not exist.",
-        "type": "invalid_request_error"
+        "type": "invalid_request_error",
+        "code": 404,
+    }
+}
+
+api_resp_input_too_long = {
+    "error": {
+        "message": "Input exceeds model's maximum length.",
+        "type": "invalid_request_error",
+        "code": 400,
+        "meta": {
+            "model": "",
+            "max_input_length": 0,
+            "max_tokens": 0,
+        },
     }
 }
 
@@ -67,11 +81,18 @@ api_resp_embeddings = {
 @app.post("/embeddings", tags=["embeddings"])
 async def api_embeddings(req: EmbeddingsRequest):
     model_name = req.model
-    model = models.get_model(model_name)
-    tokenizer = models.get_tokenizer(model_name)
-    if model == None or tokenizer == None:
+    model_meta = models.hf_model_metadata(model_name)
+    if model_meta == None:
         return api_resp_no_model
-    
+    if len(req.input) > model_meta["max_input_length"]:
+        resp = api_resp_input_too_long.copy()
+        resp["error"]["meta"]["model"] = model_name
+        resp["error"]["meta"]["max_input_length"] = model_meta["max_input_length"]
+        resp["error"]["meta"]["max_tokens"] = model_meta["max_tokens"]
+        return resp
+
+    model = models.get_model(model_name)
+    tokenizer = models.get_tokenizer(model_name)    
     embeddings = models.encode_embeddings(model, tokenizer, [req.input])
     resp = api_resp_embeddings.copy()
     resp["model"] = model_name
