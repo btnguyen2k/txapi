@@ -6,7 +6,14 @@ Latest version: [v0.1.0](RELEASE-NOTES.md).
 
 ## Features
 
-**`POST /embeddings`**: compute and return the embeddings vector from the input text.
+|API|Description|
+|---|-----------|
+|`POST /embeddings`  |compute and return the embeddings vector from the input text.|
+|`POST /token_counts`|return token counts for an input text.|
+
+### `POST /embeddings`
+
+Compute and return the embeddings vector from the input text.
 
 Supported models:
 - `sentence-transformers/multi-qa-mpnet-base-cos-v1` (alias `multi-qa-mpnet-base-cos-v1`)
@@ -51,7 +58,9 @@ Example response:
 }
 ```
 
-**`POST /token_counts`**: return token counts for an input text.
+### `POST /token_counts`
+
+Return token counts for an input text.
 
 Supported models:
 - `sentence-transformers/multi-qa-mpnet-base-cos-v1` (alias `multi-qa-mpnet-base-cos-v1`)
