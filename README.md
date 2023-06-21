@@ -2,7 +2,7 @@
 
 This repository aims to package Transformers models and provide them as API to be used locally.
 
-Latest version: [v0.1.0](RELEASE-NOTES.md).
+Latest version: [v0.2.0](RELEASE-NOTES.md).
 
 ## Features
 
