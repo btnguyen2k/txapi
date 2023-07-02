@@ -16,7 +16,7 @@ Latest version: [v0.3.0](RELEASE-NOTES.md).
 
 Compute and return the embeddings vector from the input text.
 
-Params are sent as JSON-string via request body:
+Params are sent as JSON via request body:
 
 | Param   | Type (and default value) | Description                                  |
 |---------|--------------------------|----------------------------------------------|
@@ -70,7 +70,7 @@ Example response:
 
 Split long text string into smaller chunks.
 
-Params are sent as JSON-string via request body:
+Params are sent as JSON via request body:
 
 | Param           | Type (and default value) | Description                                                |
 |-----------------|--------------------------|------------------------------------------------------------|
@@ -129,7 +129,7 @@ Example response:
 
 Return token counts for an input text.
 
-Params are sent as JSON-string via request body:
+Params are sent as JSON via request body:
 
 | Param   | Type (and default value) | Description                               |
 |---------|--------------------------|-------------------------------------------|
