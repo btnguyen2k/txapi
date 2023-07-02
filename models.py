@@ -163,22 +163,30 @@ def encode_embeddings(model, tokenizer, texts):
 
 #----------------------------------------------------------------------#
 
-def split_text(text: str, length_function, chunk_size: int, chunk_overlap: int = 0) -> [str]:
+def split_text(text: str, length_function, chunk_size: int, chunk_overlap: int = 0, language: str = '') -> [str]:
     """
     split_text is utility function to split a long text string into smaller chunks.
     :param text: the input text to be split
     :param length_function: function to calculate text length, the function must take in a string and return an int
     :param chunk_size: maximum chunk size (chunk size is calculated using length_function)
     :param chunk_overlap: specify how much chunks can overlap with each other
+    :param language: if specified, treat input as source code instead of plain text
     :return:
     """
-    from langchain.text_splitter import RecursiveCharacterTextSplitter
-    text_splitter = RecursiveCharacterTextSplitter(
-        separators = ["\n\n+", "\n", "[\\.!\\?]\s+", "[,:;]\s+", "\s+", ""],
-        chunk_size = chunk_size,
-        chunk_overlap = chunk_overlap,
-        length_function = length_function,
-    )
+    from langchain.text_splitter import RecursiveCharacterTextSplitter, Language
+    if language == '':
+        text_splitter = RecursiveCharacterTextSplitter(
+            separators = ["\n\n+", "\n", "[\\.!\\?]\s+", "[,:;]\s+", "\s+", ""],
+            chunk_size = chunk_size,
+            chunk_overlap = chunk_overlap,
+            length_function = length_function,
+        )
+    else:
+        text_splitter = RecursiveCharacterTextSplitter.from_language(Language(language),
+            chunk_size = chunk_size,
+            chunk_overlap = chunk_overlap,
+            length_function = length_function,
+        )
     chunks = text_splitter.split_text(text.replace("\r", "\n"))
     for i in range(len(chunks)):
         if i > 0 and re.match("^[.!?,:;]", chunks[i]):
