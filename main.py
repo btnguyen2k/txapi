@@ -172,6 +172,11 @@ async def api_split_text(req: SplitTextRequest):
     req.type = req.type.lower()
     req.input = req.input.replace("\r", "\n")
 
+    if req.type == "html-md" or req.type == "html-markdown":
+        import markdownify
+        req.input = markdownify.markdownify(req.input, strip=['a', 'script', 'style', 'meta', 'link', 'head'], autolinks=False, heading_style=markdownify.ATX)
+        req.type = "markdown"
+
     if req.type == "html":
         from langchain.text_splitter import Language
         chunks = models.split_text(req.input, length_function, max_tokens, chunk_overlap, Language.MARKDOWN)

@@ -82,6 +82,8 @@ Params are sent as JSON via request body:
 
 > (*) input text type:
 > - `markdown` (or `md`): input is Markdown text; API will try its best to preserve headings.
+> - `html`: input is HTML text; API will try not to break tags.
+> - `html-markdown` (or `html-md`): input is HTML text; API will convert input text to Markdown before splitting.
 > - other values: treat input as plain text.
 
 Supported models:
