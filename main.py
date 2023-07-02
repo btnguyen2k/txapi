@@ -2,7 +2,7 @@ import re
 from fastapi import FastAPI
 from pydantic import BaseModel
 
-VERSION = "0.2.0"
+VERSION = "0.3.0"
 
 # Initialize API server
 tags_metadata = [
@@ -211,8 +211,8 @@ async def api_split_text(req: SplitTextRequest):
 #----------------------------------------------------------------------#
 
 class TokenCountsRequest(BaseModel):
-    model: str # name of the model used to extract embeddings
-    input: str # the input string to extract embeddings
+    model: str # name of the model used for token counting
+    input: str # the input string to count tokens
 
 api_resp_token_counts: dict = {
   "object": "list",
