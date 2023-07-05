@@ -6,7 +6,7 @@ on:
     types: [ closed ]
     branches: [ release ]
 
-  # Allow mannually trigger 
+  # Allow manually trigger
   workflow_dispatch:
 
 jobs:

@@ -1,5 +1,17 @@
 # txapi release notes
 
+## 2023-07-05 - v0.3.1
+
+- Update HuggingFace model list:
+  - `sentence-transformers/all-mpnet-base-v2`
+  - `sentence-transformers/all-MiniLM-L6-v2`
+  - `sentence-transformers/all-MiniLM-L12-v2`
+  - `sentence-transformers/multi-qa-mpnet-base-cos-v1`
+  - `sentence-transformers/multi-qa-MiniLM-L6-cos-v1`
+  - `sentence-transformers/multi-qa-distilbert-cos-v1`
+- Env `ENABLED_HF_MODELS` to control which models are enabled.
+- Bug fixes & Enhancements
+
 ## 2023-07-02 - v0.3.0
 
 - New API: `/split_text`
