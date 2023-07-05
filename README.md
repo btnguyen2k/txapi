@@ -2,7 +2,7 @@
 
 This repository aims to package Transformers models and provide them as API to be used locally.
 
-Latest version: [v0.3.0](RELEASE-NOTES.md).
+Latest version: [v0.3.1](RELEASE-NOTES.md).
 
 ## Features
 
@@ -11,6 +11,15 @@ Latest version: [v0.3.0](RELEASE-NOTES.md).
 | `POST /embeddings`   | compute and return the embeddings vector from the input text. |
 | `POST /split_text`   | split long text string into smaller chunks.                   |
 | `POST /token_counts` | return token counts for an input text.                        |
+
+Included models:
+- `sentence-transformers` models:
+  - `all-mpnet-base-v2`
+  - `all-MiniLM-L6-v2`
+  - `all-MiniLM-L12-v2`
+  - `multi-qa-mpnet-base-cos-v1`
+  - `multi-qa-MiniLM-L6-cos-v1`
+  - `multi-qa-distilbert-cos-v1`
 
 ### `POST /embeddings`
 
@@ -24,7 +33,7 @@ Params are sent as JSON via request body:
 | `model` | `str`                    | name of the model used to extract embeddings |
 
 Supported models:
-- `sentence-transformers/multi-qa-mpnet-base-cos-v1` (alias `multi-qa-mpnet-base-cos-v1`)
+- `sentence-transformers/*`
 
 Request/Response: follow [OpenAI embeddings API](https://platform.openai.com/docs/api-reference/embeddings) format.
 
@@ -87,7 +96,7 @@ Params are sent as JSON via request body:
 > - other values: treat input as plain text.
 
 Supported models:
-- `sentence-transformers/multi-qa-mpnet-base-cos-v1` (alias `multi-qa-mpnet-base-cos-v1`)
+- `sentence-transformers/*`
 - [OpenAI models](https://platform.openai.com/docs/models).
 
 ```shell
@@ -139,7 +148,7 @@ Params are sent as JSON via request body:
 | `model` | `str`                    | name of the model used for token counting |
 
 Supported models:
-- `sentence-transformers/multi-qa-mpnet-base-cos-v1` (alias `multi-qa-mpnet-base-cos-v1`)
+- `sentence-transformers/*`
 - [OpenAI models](https://platform.openai.com/docs/models).
 
 Example request:

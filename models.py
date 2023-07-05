@@ -5,58 +5,76 @@ import tiktoken
 import re
 
 model_alias = {
+    "multi-qa-MiniLM-L6-cos-v1": "sentence-transformers/multi-qa-MiniLM-L6-cos-v1",
+    "multi-qa-distilbert-dot-v1": "sentence-transformers/multi-qa-distilbert-dot-v1",
     "multi-qa-mpnet-base-cos-v1": "sentence-transformers/multi-qa-mpnet-base-cos-v1",
+    "all-MiniLM-L6-v2": "sentence-transformers/all-MiniLM-L6-v2",
+    "all-MiniLM-L12-v2": "sentence-transformers/all-MiniLM-L12-v2",
+    "all-mpnet-base-v2": "sentence-transformers/all-mpnet-base-v2",
     "gpt-35-turbo": "gpt-3.5-turbo", # Azure deployment name
     "gpt-35-turbo-16k": "gpt-3.5-turbo-16k", # Azure deployment name
 }
 
-#----------------------------------------------------------------------#
-
-## OpenAI ##
-openai_models_meta = {
+model_meta = {
+    ## OpenAI
     # chat
-    "gpt-4": {"min_tokens": 16, "max_tokens": 8192, "max_input_length": 8192*6},
-    "gpt-4-32k": {"min_tokens": 16, "max_tokens": 32768, "max_input_length": 32768*6},
-    "gpt-3.5-turbo": {"min_tokens": 16, "max_tokens": 4096, "max_input_length": 4096*6},
-    "gpt-3.5-turbo-16k": {"min_tokens": 16, "max_tokens": 16384, "max_input_length": 16384*6},
+    "gpt-4": {"repo": "OPENAI", "min_tokens": 16, "max_tokens": 8192, "max_input_length": 8192 * 6},
+    "gpt-4-32k": {"repo": "OPENAI", "min_tokens": 16, "max_tokens": 32768, "max_input_length": 32768 * 6},
+    "gpt-3.5-turbo": {"repo": "OPENAI", "min_tokens": 16, "max_tokens": 4096, "max_input_length": 4096 * 6},
+    "gpt-3.5-turbo-16k": {"repo": "OPENAI", "min_tokens": 16, "max_tokens": 16384, "max_input_length": 16384 * 6},
     # text
-    "text-davinci-003": {"min_tokens": 16, "max_tokens": 4097, "max_input_length": 4097*6},
-    "text-davinci-002": {"min_tokens": 16, "max_tokens": 4097, "max_input_length": 4097*6},
-    "text-davinci-001": {"min_tokens": 16, "max_tokens": 4097, "max_input_length": 4097*6},
-    "text-curie-001": {"min_tokens": 16, "max_tokens": 2049, "max_input_length": 2049*6},
-    "text-babbage-001": {"min_tokens": 16, "max_tokens": 2049, "max_input_length": 2049*6},
-    "text-ada-001": {"min_tokens": 16, "max_tokens": 2049, "max_input_length": 2049*6},
-    "davinci": {"min_tokens": 16, "max_tokens": 2049, "max_input_length": 2049*6},
-    "curie": {"min_tokens": 16, "max_tokens": 2049, "max_input_length": 2049*6},
-    "babbage": {"min_tokens": 16, "max_tokens": 2049, "max_input_length": 2049*6},
-    "ada": {"min_tokens": 16, "max_tokens": 2049, "max_input_length": 2049*6},
+    "text-davinci-003": {"repo": "OPENAI", "min_tokens": 16, "max_tokens": 4097, "max_input_length": 4097 * 6},
+    "text-davinci-002": {"repo": "OPENAI", "min_tokens": 16, "max_tokens": 4097, "max_input_length": 4097 * 6},
+    "text-davinci-001": {"repo": "OPENAI", "min_tokens": 16, "max_tokens": 4097, "max_input_length": 4097 * 6},
+    "text-curie-001": {"repo": "OPENAI", "min_tokens": 16, "max_tokens": 2049, "max_input_length": 2049 * 6},
+    "text-babbage-001": {"repo": "OPENAI", "min_tokens": 16, "max_tokens": 2049, "max_input_length": 2049 * 6},
+    "text-ada-001": {"repo": "OPENAI", "min_tokens": 16, "max_tokens": 2049, "max_input_length": 2049 * 6},
+    "davinci": {"repo": "OPENAI", "min_tokens": 16, "max_tokens": 2049, "max_input_length": 2049 * 6},
+    "curie": {"repo": "OPENAI", "min_tokens": 16, "max_tokens": 2049, "max_input_length": 2049 * 6},
+    "babbage": {"repo": "OPENAI", "min_tokens": 16, "max_tokens": 2049, "max_input_length": 2049 * 6},
+    "ada": {"repo": "OPENAI", "min_tokens": 16, "max_tokens": 2049, "max_input_length": 2049 * 6},
     # code
-    "code-davinci-002": {"min_tokens": 16, "max_tokens": 8001, "max_input_length": 8001*6},
-    "code-davinci-001": {"min_tokens": 16, "max_tokens": 8001, "max_input_length": 8001*6},
-    "code-cushman-002": {"min_tokens": 16, "max_tokens": 2048, "max_input_length": 2048*6},
-    "code-cushman-001": {"min_tokens": 16, "max_tokens": 2048, "max_input_length": 2048*6},
-    "davinci-codex": {"min_tokens": 16, "max_input_length": 8192*6},
-    "cushman-codex": {"min_tokens": 16, "max_input_length": 8192*6},
+    "code-davinci-002": {"repo": "OPENAI", "min_tokens": 16, "max_tokens": 8001, "max_input_length": 8001 * 6},
+    "code-davinci-001": {"repo": "OPENAI", "min_tokens": 16, "max_tokens": 8001, "max_input_length": 8001 * 6},
+    "code-cushman-002": {"repo": "OPENAI", "min_tokens": 16, "max_tokens": 2048, "max_input_length": 2048 * 6},
+    "code-cushman-001": {"repo": "OPENAI", "min_tokens": 16, "max_tokens": 2048, "max_input_length": 2048 * 6},
+    "davinci-codex": {"repo": "OPENAI", "min_tokens": 16, "max_input_length": 8192 * 6},
+    "cushman-codex": {"repo": "OPENAI", "min_tokens": 16, "max_input_length": 8192 * 6},
     # edit
-    "text-davinci-edit-001": {"min_tokens": 16, "max_input_length": 8192*6},
-    "code-davinci-edit-001": {"min_tokens": 16, "max_input_length": 8192*6},
+    "text-davinci-edit-001": {"repo": "OPENAI", "min_tokens": 16, "max_input_length": 8192 * 6},
+    "code-davinci-edit-001": {"repo": "OPENAI", "min_tokens": 16, "max_input_length": 8192 * 6},
     # embeddings
     # https://learn.microsoft.com/en-us/azure/cognitive-services/openai/concepts/models#embeddings-models-1
-    "text-embedding-ada-002": {"min_tokens": 16, "max_tokens": 8191, "max_input_length": 8191*6},
+    "text-embedding-ada-002": {"repo": "OPENAI", "min_tokens": 16, "max_tokens": 8191, "max_input_length": 8191 * 6},
     # old embeddings
-    "text-similarity-davinci-001": {"min_tokens": 16, "max_tokens": 2046, "max_input_length": 2046*6},
-    "text-similarity-curie-001": {"min_tokens": 16, "max_tokens": 2046, "max_input_length": 2046*6},
-    "text-similarity-babbage-001": {"min_tokens": 16, "max_tokens": 2046, "max_input_length": 2046*6},
-    "text-similarity-ada-001": {"min_tokens": 16, "max_tokens": 2046, "max_input_length": 2046*6},
-    "text-search-davinci-doc-001": {"min_tokens": 16, "max_tokens": 2046, "max_input_length": 2046*6},
-    "text-search-curie-doc-001": {"min_tokens": 16, "max_tokens": 2046, "max_input_length": 2046*6},
-    "text-search-babbage-doc-001": {"min_tokens": 16, "max_tokens": 2046, "max_input_length": 2046*6},
-    "text-search-ada-doc-001": {"min_tokens": 16, "max_tokens": 2046, "max_input_length": 2046*6},
-    "code-search-babbage-code-001": {"min_tokens": 16, "max_tokens": 2046, "max_input_length": 2046*6},
-    "code-search-ada-code-001": {"min_tokens": 16, "max_tokens": 2046, "max_input_length": 2046*6},
+    "text-similarity-davinci-001": {"repo": "OPENAI", "min_tokens": 16, "max_tokens": 2046, "max_input_length": 2046 * 6},
+    "text-similarity-curie-001": {"repo": "OPENAI", "min_tokens": 16, "max_tokens": 2046, "max_input_length": 2046 * 6},
+    "text-similarity-babbage-001": {"repo": "OPENAI", "min_tokens": 16, "max_tokens": 2046, "max_input_length": 2046 * 6},
+    "text-similarity-ada-001": {"repo": "OPENAI", "min_tokens": 16, "max_tokens": 2046, "max_input_length": 2046 * 6},
+    "text-search-davinci-doc-001": {"repo": "OPENAI", "min_tokens": 16, "max_tokens": 2046, "max_input_length": 2046 * 6},
+    "text-search-curie-doc-001": {"repo": "OPENAI", "min_tokens": 16, "max_tokens": 2046, "max_input_length": 2046 * 6},
+    "text-search-babbage-doc-001": {"repo": "OPENAI", "min_tokens": 16, "max_tokens": 2046, "max_input_length": 2046 * 6},
+    "text-search-ada-doc-001": {"repo": "OPENAI", "min_tokens": 16, "max_tokens": 2046, "max_input_length": 2046 * 6},
+    "code-search-babbage-code-001": {"repo": "OPENAI", "min_tokens": 16, "max_tokens": 2046, "max_input_length": 2046 * 6},
+    "code-search-ada-code-001": {"repo": "OPENAI", "min_tokens": 16, "max_tokens": 2046, "max_input_length": 2046 * 6},
     # open source
     # "gpt2": {"max_input_length": 8192*6},
+
+    ## HuggingFace
+    "sentence-transformers/multi-qa-mpnet-base-cos-v1": {"repo": "HF", "enabled": False, "min_tokens": 16, "max_tokens": 512, "max_input_length": 512*6},
+    "sentence-transformers/multi-qa-distilbert-cos-v1": {"repo": "HF", "enabled": False, "min_tokens": 16, "max_tokens": 512, "max_input_length": 512*6},
+    "sentence-transformers/multi-qa-MiniLM-L6-cos-v1": {"repo": "HF", "enabled": False, "min_tokens": 16, "max_tokens": 512, "max_input_length": 512*6},
+    "sentence-transformers/all-mpnet-base-v2": {"repo": "HF", "enabled": False, "min_tokens": 16, "max_tokens": 512, "max_input_length": 512*6},
+    "sentence-transformers/all-MiniLM-L12-v2": {"repo": "HF", "enabled": False, "min_tokens": 16, "max_tokens": 512, "max_input_length": 512*6},
+    "sentence-transformers/all-MiniLM-L6-v2": {"repo": "HF", "enabled": False, "min_tokens": 16, "max_tokens": 512, "max_input_length": 512*6},
 }
+
+hf_model_names = []
+for n,m in model_meta.items():
+    if m["repo"] == "HF":
+        hf_model_names.append(n)
+
+#----------------------------------------------------------------------#
 
 def openai_model_metadata(model_name: str) -> dict:
     """
@@ -64,11 +82,12 @@ def openai_model_metadata(model_name: str) -> dict:
     :param model_name: name of the model to fetch metadata
     :return: the model's metadata, or {} if the model does not exist
     """
-    if model_name in openai_models_meta.keys():
-        return openai_models_meta[model_name]
-    elif model_name in model_alias.keys():
-        if model_alias[model_name] in openai_models_meta.keys():
-            return openai_models_meta[model_alias[model_name]]
+    meta = model_meta.get(model_name, {})
+    if meta and meta["repo"] == "OPENAI":
+        return meta
+    meta = model_meta.get(model_alias.get(model_name, ""), {})
+    if meta and meta["repo"] == "OPENAI":
+        return meta
     return {}
 
 def openai_token_counts(model_name: str, input: str) -> int:
@@ -88,9 +107,6 @@ def openai_token_counts(model_name: str, input: str) -> int:
 hf_cache_dir = "./cache_hf"
 hf_models = {}
 hf_tokenizers = {}
-hf_models_meta = {
-    "sentence-transformers/multi-qa-mpnet-base-cos-v1": {"min_tokens": 16, "max_tokens": 512, "max_input_length": 8192},
-}
 
 def hf_model_metadata(model_name) -> dict:
     """
@@ -98,11 +114,12 @@ def hf_model_metadata(model_name) -> dict:
     :param model_name: name of the model to fetch metadata
     :return: the model's metadata, or {} if the model does not exist
     """
-    if model_name in hf_models_meta.keys():
-        return hf_models_meta[model_name]
-    elif model_name in model_alias.keys():
-        if model_alias[model_name] in hf_models_meta.keys():
-            return hf_models_meta[model_alias[model_name]]
+    meta = model_meta.get(model_name, {})
+    if meta and meta["repo"] == "HF":
+        return meta
+    meta = model_meta.get(model_alias.get(model_name, ""), {})
+    if meta and meta["repo"] == "HF":
+        return meta
     return {}
 
 def hf_get_model(model_name):
@@ -111,12 +128,10 @@ def hf_get_model(model_name):
     :param model_name: name of the model to fetch metadata
     :return: the model, or None if the model does not exist
     """
-    if model_name in hf_models.keys():
-        return hf_models[model_name]
-    elif model_name in model_alias.keys():
-        if model_alias[model_name] in hf_models.keys():
-            return hf_models[model_alias[model_name]]
-    return None
+    model = hf_models.get(model_name, None)
+    if model is None:
+        model = hf_models.get(model_alias.get(model_name, ""), None)
+    return model
 
 def hf_get_tokenizer(model_name):
     """
@@ -124,12 +139,10 @@ def hf_get_tokenizer(model_name):
     :param model_name: name of the model to fetch metadata
     :return: the tokenizer, or None if the model does not exist
     """
-    if model_name in hf_tokenizers.keys():
-        return hf_tokenizers[model_name]
-    elif model_name in model_alias.keys():
-        if model_alias[model_name] in hf_tokenizers.keys():
-            return hf_tokenizers[model_alias[model_name]]
-    return None
+    tokenizer = hf_tokenizers.get(model_name, None)
+    if tokenizer is None:
+        tokenizer = hf_tokenizers.get(model_alias.get(model_name, ""), None)
+    return tokenizer
 
 def mean_pooling(model_output, attention_mask):
     """
@@ -196,9 +209,9 @@ def split_text(text: str, length_function, chunk_size: int, chunk_overlap: int =
     return chunks
 
 # Load models from HuggingFace Hub
-for model_name in hf_models_meta:
-    print("Loading model from HuggingFace Hub", model_name)
+def hf_load_model(model_name):
     tokenizer = AutoTokenizer.from_pretrained(model_name, cache_dir=hf_cache_dir)
     hf_tokenizers[model_name] = tokenizer
     model = AutoModel.from_pretrained(model_name, cache_dir=hf_cache_dir)
     hf_models[model_name] = model
+    print(f"[INFO] Loaded model <{model_name}> from HuggingFace Hub.")
