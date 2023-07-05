@@ -5,9 +5,15 @@ FROM python:3.9-slim as txapi-build
 LABEL org.opencontainers.image.authors="Thanh Nguyen <btnguyen2k (at) gmail(dot)com>"
 RUN mkdir -p /workspace
 ADD requirements.txt /workspace
+ADD *.py /workspace
 RUN cd /workspace && python -m venv myenv && bash -c 'source myenv/bin/activate && pip install -U -r requirements.txt'
-RUN cd /workspace \
-    && bash -c "source myenv/bin/activate && python -c 'from transformers import AutoTokenizer, AutoModel; cache_dir=\"/workspace/cache\"; model_name=\"sentence-transformers/multi-qa-mpnet-base-cos-v1\"; model=AutoModel.from_pretrained(model_name, cache_dir=cache_dir); tokenizer=AutoTokenizer.from_pretrained(model_name, cache_dir=cache_dir)'"
+# Preload models from HuggingFace Hub
+RUN cd /workspace && bash -c "source myenv/bin/activate && python _preload_hf_model.py sentence-transformers/multi-qa-mpnet-base-cos-v1"
+RUN cd /workspace && bash -c "source myenv/bin/activate && python _preload_hf_model.py sentence-transformers/multi-qa-distilbert-cos-v1"
+RUN cd /workspace && bash -c "source myenv/bin/activate && python _preload_hf_model.py sentence-transformers/multi-qa-MiniLM-L6-cos-v1"
+RUN cd /workspace && bash -c "source myenv/bin/activate && python _preload_hf_model.py sentence-transformers/all-mpnet-base-v2"
+RUN cd /workspace && bash -c "source myenv/bin/activate && python _preload_hf_model.py sentence-transformers/all-MiniLM-L12-v2"
+RUN cd /workspace && bash -c "source myenv/bin/activate && python _preload_hf_model.py sentence-transformers/all-MiniLM-L6-v2"
 
 FROM python:3.9-slim as txapi-runtime
 LABEL org.opencontainers.image.authors="Thanh Nguyen <btnguyen2k (at) gmail(dot)com>"
@@ -15,7 +21,7 @@ ARG USERNAME=api
 ARG USERID=1000
 RUN useradd --system --create-home --home-dir /workspace --shell /bin/bash --uid $USERID $USERNAME
 COPY --from=txapi-build --chown=$USERNAME /workspace /workspace
-COPY --chown=$USERNAME *.py /workspace
+#COPY --chown=$USERNAME *.py /workspace
 USER $USERNAME
 WORKDIR /workspace
 EXPOSE 8000
@@ -24,5 +30,5 @@ EXPOSE 8000
 ENV PYTHONDONTWRITEBYTECODE 1
 # Prevents Python from buffering stdout and stderr (equivalent to python -u option)
 ENV PYTHONUNBUFFERED 1
-CMD ["bash", "-c", "source myenv/bin/activate && python main.py"]
+CMD ["bash", "-c", "source myenv/bin/activate && python server.py"]
 

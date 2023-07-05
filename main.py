@@ -1,8 +1,9 @@
-import re
+from typing import Tuple, Dict, Any
+
 from fastapi import FastAPI
 from pydantic import BaseModel
 
-VERSION = "0.3.0"
+VERSION = "0.3.1"
 
 # Initialize API server
 tags_metadata = [
@@ -56,6 +57,22 @@ api_resp_no_model: dict = {
     }
 }
 
+api_resp_model_not_enabled: dict = {
+    "error": {
+        "message": "The specified model is not enabled.",
+        "type": "invalid_request_error",
+        "code": 405,
+    }
+}
+
+api_resp_model_not_loaded: dict = {
+    "error": {
+        "message": "The specified model is not loaded yet.",
+        "type": "invalid_request_error",
+        "code": 409,
+    }
+}
+
 api_resp_input_too_long: dict = {
     "error": {
         "message": "Input exceeds model's maximum length.",
@@ -68,6 +85,41 @@ api_resp_input_too_long: dict = {
         },
     }
 }
+
+## setup models
+import os
+env_enabled_hf_models = os.getenv("ENABLED_HF_MODELS", ",".join(models.hf_model_names)).split(",")
+for model_name in env_enabled_hf_models:
+    meta = models.model_meta.get(model_name, {})
+    if meta and meta["repo"] == "HF":
+        meta["enabled"] = True
+        print(f"[INFO] Enabled HuggingFace model <{model_name}>.")
+        import threading
+        threading.Thread(target=models.hf_load_model, name="Load HF model", args=[model_name]).start()
+
+def verify_api_request(model_name: str, input: str, is_hf: bool = True) -> Tuple[dict, Any, Any, Any]:
+    if is_hf:
+        model_meta = models.hf_model_metadata(model_name)
+    else:
+        model_meta = models.openai_model_metadata(model_name)
+    if not model_meta:
+        return api_resp_no_model, model_meta, None, None
+    if is_hf and not model_meta["enabled"]:
+        return api_resp_model_not_enabled, model_meta, None, None
+    if len(input) > model_meta["max_input_length"]:
+        resp = api_resp_input_too_long.copy()
+        resp["error"]["meta"] = model_meta
+        resp["error"]["meta"]["model"] = model_name
+        return resp, model_meta, None, None
+    if is_hf:
+        model = models.hf_get_model(model_name)
+        if model is None:
+            return api_resp_model_not_loaded, model_meta, None, None
+        tokenizer = models.hf_get_tokenizer(model_name)
+        if tokenizer is None:
+            return api_resp_model_not_loaded, model_meta, None, None
+        return {}, model_meta, model, tokenizer
+    return {}, model_meta, None, None
 
 #----------------------------------------------------------------------#
 
@@ -98,21 +150,12 @@ async def api_embeddings(req: EmbeddingsRequest):
 
     This API supports offline models only!
     """
-    model_name = req.model
-    model_meta = models.hf_model_metadata(model_name)
-    if not bool(model_meta):
-        return api_resp_no_model
-    if len(req.input) > model_meta["max_input_length"]:
-        resp = api_resp_input_too_long.copy()
-        resp["error"]["meta"] = model_meta
-        resp["error"]["meta"]["model"] = model_name
+    resp, model_meta, model, tokenizer = verify_api_request(req.model, req.input, True)
+    if resp:
         return resp
-
-    model = models.hf_get_model(model_name)
-    tokenizer = models.hf_get_tokenizer(model_name)
     embeddings = models.encode_embeddings(model, tokenizer, [req.input])
     resp = api_resp_embeddings.copy()
-    resp["model"] = model_name
+    resp["model"] = req.model
     resp["data"][0]["embedding"] = embeddings[0].tolist()
     resp["meta"] = model_meta
     return resp
@@ -141,13 +184,14 @@ api_resp_split_text: dict = {
 @app.post("/split_text", tags=["split_text"])
 async def api_split_text(req: SplitTextRequest):
     hf_model = True
-    model_name = req.model
-    model_meta = models.hf_model_metadata(model_name)
-    if not bool(model_meta):
+    resp, model_meta, model, tokenizer = verify_api_request(req.model, "", True)
+    if resp and model_meta:
+        return resp
+    if not model_meta:
         hf_model = False
-        model_meta = models.openai_model_metadata(model_name)
-        if not bool(model_meta):
-            return api_resp_no_model
+        resp, model_meta, _, _ = verify_api_request(req.model, "", False)
+        if resp:
+            return resp
 
     max_tokens = req.max_tokens
     if max_tokens <= 0 or max_tokens > model_meta['max_tokens']:
@@ -159,14 +203,13 @@ async def api_split_text(req: SplitTextRequest):
         chunk_overlap = 0
 
     if hf_model:
-        tokenizer = models.hf_get_tokenizer(model_name)
         def length_func(input_text)->int:
             encoded_input = tokenizer(input_text, padding=True)
             return len(encoded_input["input_ids"])
         length_function = length_func
     else:
         def length_func(input_text)->int:
-            return models.openai_token_counts(model_name, input_text)
+            return models.openai_token_counts(req.model, input_text)
         length_function = length_func
 
     req.type = req.type.lower()
@@ -179,7 +222,7 @@ async def api_split_text(req: SplitTextRequest):
 
     if req.type == "html":
         from langchain.text_splitter import Language
-        chunks = models.split_text(req.input, length_function, max_tokens, chunk_overlap, Language.MARKDOWN)
+        chunks = models.split_text(req.input, length_function, max_tokens, chunk_overlap, Language.HTML)
     elif req.type == "md" or req.type == "markdown":
         from langchain.text_splitter import MarkdownHeaderTextSplitter
         headers_to_split_on = [
@@ -204,7 +247,7 @@ async def api_split_text(req: SplitTextRequest):
         chunks = models.split_text(req.input, length_function, max_tokens, chunk_overlap)
 
     resp = api_resp_split_text.copy()
-    resp["model"] = model_name
+    resp["model"] = req.model
     resp["meta"] = model_meta
     resp["data"] = []
     for i in range(len(chunks)):
@@ -237,25 +280,21 @@ api_resp_token_counts: dict = {
 @app.post("/token_counts", tags=["token_counts"])
 async def api_token_counts(req: TokenCountsRequest):
     hf_model = True
-    model_name = req.model
-    model_meta = models.hf_model_metadata(model_name)
-    if not bool(model_meta):
-        hf_model = False
-        model_meta = models.openai_model_metadata(model_name)
-        if not bool(model_meta):
-            return api_resp_no_model
-    if len(req.input) > model_meta["max_input_length"]:
-        resp = api_resp_input_too_long.copy()
-        resp["error"]["meta"] = model_meta
-        resp["error"]["meta"]["model"] = model_name
+    resp, model_meta, _, tokenizer = verify_api_request(req.model, req.input, True)
+    if resp and model_meta:
         return resp
+    if not model_meta:
+        hf_model = False
+        resp, model_meta, _, _ = verify_api_request(req.model, req.input, False)
+        if resp:
+            return resp
 
     if hf_model:
-        tokenizer = models.hf_get_tokenizer(model_name)
+        tokenizer = models.hf_get_tokenizer(req.model)
         encoded_input = tokenizer(req.input, padding=True)
         token_counts = len(encoded_input["input_ids"])
     else:
-        token_counts = models.openai_token_counts(model_name, req.input)
+        token_counts = models.openai_token_counts(req.model, req.input)
 
     resp = api_resp_token_counts.copy()
     resp["model"] = model_name
@@ -272,15 +311,3 @@ async def health():
     :return:
     """
     return "ok"
-
-#----------------------------------------------------------------------#
-
-import uvicorn
-
-if __name__ == "__main__":
-    import os
-    num_workers = int(os.getenv("NUM_WORKERS", 1))
-    if num_workers < 1:
-        uvicorn.run(app, host="0.0.0.0", port=8000)
-    else:
-        uvicorn.run("main:app", host="0.0.0.0", port=8000, workers=num_workers)
