@@ -18,7 +18,7 @@ jobs:
         uses: actions/checkout@v2
       - name: Setup application version number and build date
         run: |
-          APP_VERSION=0.2.0
+          APP_VERSION=0.3.1
           echo "APP_VERSION=$APP_VERSION" >> $GITHUB_ENV
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
