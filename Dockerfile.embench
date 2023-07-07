@@ -16,6 +16,8 @@ RUN cd /workspace && bash -c "source myenv/bin/activate && python _preload_hf_mo
 RUN cd /workspace && bash -c "source myenv/bin/activate && python _preload_hf_model.py sentence-transformers/all-MiniLM-L12-v2"
 RUN cd /workspace && bash -c "source myenv/bin/activate && python _preload_hf_model.py sentence-transformers/all-MiniLM-L6-v2"
 RUN cd /workspace && bash -c "source myenv/bin/activate && python _preload_hf_model.py keepitreal/vietnamese-sbert"
+RUN cd /workspace && bash -c "source myenv/bin/activate && python _preload_hf_model.py vinai/bartpho-word"
+RUN cd /workspace && bash -c "source myenv/bin/activate && python _preload_hf_model.py vinai/bartpho-syllable"
 RUN cd /workspace && bash -c "source myenv/bin/activate && python _preload_hf_model.py vinai/bartpho-word-base"
 RUN cd /workspace && bash -c "source myenv/bin/activate && python _preload_hf_model.py vinai/bartpho-syllable-base"
 # Run benchmark
