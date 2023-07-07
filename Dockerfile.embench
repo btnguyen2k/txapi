@@ -7,7 +7,7 @@ RUN mkdir -p /workspace
 ADD requirements.txt /workspace
 ADD *.py /workspace
 RUN cd /workspace && python -m venv myenv && bash -c 'source myenv/bin/activate && pip install -U -r requirements.txt'
-RUN cd /workspace && python -m venv myenv && bash -c 'source myenv/bin/activate && pip install -U pandas tabulate'
+RUN cd /workspace && python -m venv myenv && bash -c 'source myenv/bin/activate && pip install -U pandas tabulate SentencePiece'
 # Preload models from HuggingFace Hub
 RUN cd /workspace && bash -c "source myenv/bin/activate && python _preload_hf_model.py sentence-transformers/multi-qa-mpnet-base-cos-v1"
 RUN cd /workspace && bash -c "source myenv/bin/activate && python _preload_hf_model.py sentence-transformers/multi-qa-distilbert-cos-v1"
