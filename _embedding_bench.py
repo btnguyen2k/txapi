@@ -10,7 +10,6 @@ import models
 import torch
 import argparse
 
-
 aparser = argparse.ArgumentParser()
 aparser.add_argument('--no-progress', type=bool, help='Set to disable progress bar', default=False)
 args = aparser.parse_args()
@@ -44,7 +43,8 @@ def progress_bar(iteration, total, prefix='', suffix='', decimals=1, length=100,
 def calc_score(model, tokenizer, query: str, docs: [str]):
     query_emb = models.encode_embeddings(model, tokenizer, [query])
     docs_emb = models.encode_embeddings(model, tokenizer, docs)
-    scores = torch.mm(query_emb, docs_emb.transpose(0, 1))[0].cpu().tolist()
+    # scores = torch.mm(query_emb, docs_emb.transpose(0, 1))[0].cpu().tolist()
+    scores = torch.nn.CosineSimilarity(dim=1)(query_emb, docs_emb).cpu().tolist()
     doc_score_pairs = list(zip(docs, scores))
     return doc_score_pairs
 
@@ -54,7 +54,7 @@ def benchmark_model(model_name: str, dataset: [str], cache_dir="./cache_hf"):
     tokenizer = AutoTokenizer.from_pretrained(model_name, cache_dir=cache_dir)
     model = AutoModel.from_pretrained(model_name, cache_dir=cache_dir)
 
-    query_arr, summary_arr, dist_arr = [], [], []
+    query_arr, summary_arr, distance_arr = [], [], []
     import time
     start = time.time()
     import json
@@ -65,14 +65,14 @@ def benchmark_model(model_name: str, dataset: [str], cache_dir="./cache_hf"):
         doc_score_pairs = calc_score(model, tokenizer, query, docs)
         query_arr.append(query)
         summary_arr.append(docs[0])
-        dist_arr.append(1.0 - doc_score_pairs[0][1])
+        distance_arr.append(1.0 - doc_score_pairs[0][1])
         if display_progress:
             progress_bar(len(query_arr), len(dataset), prefix='Progress:', suffix='Complete', length=50)
     duration = time.time() - start
     speed = len(query_arr) / duration
     print(f"Model: {model_name} - Time elapsed: {duration:.2f} seconds, speed: {speed:.2f} items/s")
     import pandas as pd
-    df = pd.DataFrame({"query": query_arr, "summary": summary_arr, "distance": dist_arr})
+    df = pd.DataFrame({"query": query_arr, "summary": summary_arr, "distance": distance_arr})
     min, max, mean = 1.0 - df["distance"].max(), 1.0 - df["distance"].min(), 1.0 - df["distance"].mean()
     p80, p90 = 1.0 - df["distance"].quantile(0.80), 1.0 - df["distance"].quantile(0.90)
     p95, p99 = 1.0 - df["distance"].quantile(0.95), 1.0 - df["distance"].quantile(0.99)
