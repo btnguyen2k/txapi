@@ -61,10 +61,9 @@ def benchmark_model(model_name: str, dataset: [str], cache_dir="./cache_hf"):
         summary_arr.append(docs[0])
         dist_arr.append(1.0 - doc_score_pairs[0][1])
         progress_bar(len(query_arr), len(dataset), prefix='Progress:', suffix='Complete', length=50)
-    print()
     duration = time.time() - start
     speed = len(query_arr) / duration
-    print(f"Model: {model_name} - Time elapsed: {duration:.3f} seconds, speed: {speed:.3f} items/s")
+    print(f"Model: {model_name} - Time elapsed: {duration:.2f} seconds, speed: {speed:.2f} items/s")
     import pandas as pd
     df = pd.DataFrame({"query": query_arr, "summary": summary_arr, "distance": dist_arr})
     min, max, mean = 1.0 - df["distance"].max(), 1.0 - df["distance"].min(), 1.0 - df["distance"].mean()
@@ -72,13 +71,13 @@ def benchmark_model(model_name: str, dataset: [str], cache_dir="./cache_hf"):
     p95, p99 = 1.0 - df["distance"].quantile(0.95), 1.0 - df["distance"].quantile(0.99)
     print(
         f"Min: {min:.3f} / Max: {max:.3f} / Mean: {mean:.3f} / P80: {p80:.3f} / P90: {p90:.3f} / P95: {p95:.3f} / P99: {p99:.3f}")
-    print("=" * 100)
-    return df
+    print("-" * 120)
+    return df, speed
 
 
 # load benchmark configurations from file
 model_list = []
-dataset_file = ""
+dataset_files = []
 with open("./datasets/benchmark.conf", 'r') as file:
     line = file.readline()
     while line:
@@ -88,33 +87,32 @@ with open("./datasets/benchmark.conf", 'r') as file:
             if section.strip().upper() == "MODEL":
                 model_list.append(value.strip())
             if section.strip().upper() == "DATAFILE":
-                dataset_file = "./datasets/" + value.strip()
+                dataset_files.append("./datasets/" + value.strip())
         line = file.readline()
 
-dataset = []
-if dataset_file != "":
+for dataset_file in dataset_files:
     with open(dataset_file, 'r') as file:
         dataset = file.readlines()
-
-if len(dataset) > 0:
     print(f"Data file <{dataset_file}> has {len(dataset)} lines")
-else:
-    print(f"Data file <{dataset_file}> is empty")
-    exit(1)
 
-min_arr, max_arr, mean_arr = [], [], []
-p80_arr, p90_arr, p95_arr, p99_arr = [], [], [], []
-for model_name in model_list:
-    df = benchmark_model(model_name, dataset[:10])
-    min_arr.append(round(1.0 - df["distance"].max(), 4))
-    max_arr.append(round(1.0 - df["distance"].min(), 4))
-    mean_arr.append(round(1.0 - df["distance"].mean(), 4))
-    p80_arr.append(round(1.0 - df["distance"].quantile(0.80), 4))
-    p90_arr.append(round(1.0 - df["distance"].quantile(0.90), 4))
-    p95_arr.append(round(1.0 - df["distance"].quantile(0.95), 4))
-    p99_arr.append(round(1.0 - df["distance"].quantile(0.99), 4))
-df = pd.DataFrame({
-    "min": min_arr, "max": max_arr, "mean": mean_arr,
-    "p80": p80_arr, "p90": p90_arr, "p95": p95_arr, "p99": p99_arr,
-}, index=model_list)
-print(df.to_markdown())
+    min_arr, max_arr, mean_arr = [], [], []
+    p80_arr, p90_arr, p95_arr, p99_arr = [], [], [], []
+    speed_arr = []
+    for model_name in model_list:
+        df, speed = benchmark_model(model_name, dataset)
+        min_arr.append(round(1.0 - df["distance"].max(), 3))
+        max_arr.append(round(1.0 - df["distance"].min(), 3))
+        mean_arr.append(round(1.0 - df["distance"].mean(), 3))
+        p80_arr.append(round(1.0 - df["distance"].quantile(0.80), 3))
+        p90_arr.append(round(1.0 - df["distance"].quantile(0.90), 3))
+        p95_arr.append(round(1.0 - df["distance"].quantile(0.95), 3))
+        p99_arr.append(round(1.0 - df["distance"].quantile(0.99), 3))
+        speed_arr.append(round(speed, 2))
+    df = pd.DataFrame({
+        "speed": speed_arr,
+        "min": min_arr, "max": max_arr, "mean": mean_arr,
+        "p80": p80_arr, "p90": p90_arr, "p95": p95_arr, "p99": p99_arr,
+    }, index=model_list)
+    print(f"Data file <{dataset_file}> benchmark result:")
+    print(df.to_markdown())
+    print("=" * 120)

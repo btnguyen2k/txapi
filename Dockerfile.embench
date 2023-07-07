@@ -1,0 +1,21 @@
+# Sample build command:
+# $ docker build --rm -t txapi:embench .
+
+FROM python:3.9-slim as txapi-build
+LABEL org.opencontainers.image.authors="Thanh Nguyen <btnguyen2k (at) gmail(dot)com>"
+RUN mkdir -p /workspace
+ADD requirements.txt /workspace
+ADD *.py /workspace
+RUN cd /workspace && python -m venv myenv && bash -c 'source myenv/bin/activate && pip install -U -r requirements.txt'
+RUN cd /workspace && python -m venv myenv && bash -c 'source myenv/bin/activate && pip install -U pandas tabulate'
+# Preload models from HuggingFace Hub
+RUN cd /workspace && bash -c "source myenv/bin/activate && python _preload_hf_model.py sentence-transformers/multi-qa-mpnet-base-cos-v1"
+RUN cd /workspace && bash -c "source myenv/bin/activate && python _preload_hf_model.py sentence-transformers/multi-qa-distilbert-cos-v1"
+RUN cd /workspace && bash -c "source myenv/bin/activate && python _preload_hf_model.py sentence-transformers/multi-qa-MiniLM-L6-cos-v1"
+RUN cd /workspace && bash -c "source myenv/bin/activate && python _preload_hf_model.py sentence-transformers/all-mpnet-base-v2"
+RUN cd /workspace && bash -c "source myenv/bin/activate && python _preload_hf_model.py sentence-transformers/all-MiniLM-L12-v2"
+RUN cd /workspace && bash -c "source myenv/bin/activate && python _preload_hf_model.py sentence-transformers/all-MiniLM-L6-v2"
+# Run benchmark
+RUN mkdir -p /workspace/datasets
+ADD datasets/* /workspace/datasets/
+RUN cd /workspace && bash -c "source myenv/bin/activate && python _embedding_bench.py"
