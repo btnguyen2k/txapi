@@ -207,6 +207,10 @@ $ python main.py
 # API documentation is ready at http://localhost:8000/docs
 ```
 
+## Datasets and Benchmark
+
+Some datasets and benchmark results are available at [datasets](./datasets) folder.
+
 ## License
 
 MIT - See [LICENSE.md](LICENSE.md).
