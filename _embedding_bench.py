@@ -51,7 +51,7 @@ def calc_score(model, tokenizer, query: str, docs: [str]):
 
 def benchmark_model(model_name: str, dataset: [str], cache_dir="./cache_hf"):
     from transformers import AutoTokenizer, AutoModel
-    tokenizer = AutoTokenizer.from_pretrained(model_name, cache_dir=cache_dir)
+    tokenizer = AutoTokenizer.from_pretrained(model_name, cache_dir=cache_dir, model_max_length=1024)
     model = AutoModel.from_pretrained(model_name, cache_dir=cache_dir)
 
     query_arr, summary_arr, distance_arr = [], [], []
