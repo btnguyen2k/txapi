@@ -6,9 +6,15 @@ Author: Thanh Nguyen <btnguyen2k(at)gmail(dot)com>
 This script read the configuration file located at ./datasets/benchmark.conf
 """
 import pandas as pd
-
 import models
 import torch
+import argparse
+
+
+aparser = argparse.ArgumentParser()
+aparser.add_argument('--no-progress', type=bool, help='Set to disable progress bar', default=False)
+args = aparser.parse_args()
+display_progress = not args.no_progress
 
 
 # Print iterations progress
@@ -60,7 +66,8 @@ def benchmark_model(model_name: str, dataset: [str], cache_dir="./cache_hf"):
         query_arr.append(query)
         summary_arr.append(docs[0])
         dist_arr.append(1.0 - doc_score_pairs[0][1])
-        progress_bar(len(query_arr), len(dataset), prefix='Progress:', suffix='Complete', length=50)
+        if display_progress:
+            progress_bar(len(query_arr), len(dataset), prefix='Progress:', suffix='Complete', length=50)
     duration = time.time() - start
     speed = len(query_arr) / duration
     print(f"Model: {model_name} - Time elapsed: {duration:.2f} seconds, speed: {speed:.2f} items/s")

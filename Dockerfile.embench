@@ -18,4 +18,4 @@ RUN cd /workspace && bash -c "source myenv/bin/activate && python _preload_hf_mo
 # Run benchmark
 RUN mkdir -p /workspace/datasets
 ADD datasets/* /workspace/datasets/
-RUN cd /workspace && bash -c "source myenv/bin/activate && python _embedding_bench.py"
+RUN cd /workspace && bash -c "source myenv/bin/activate && python _embedding_bench.py --no-progress=true"
