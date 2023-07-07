@@ -67,7 +67,7 @@ def benchmark_model(model_name: str, dataset: [str], cache_dir="./cache_hf"):
         summary_arr.append(docs[0])
         distance_arr.append(1.0 - doc_score_pairs[0][1])
         if display_progress:
-            progress_bar(len(query_arr), len(dataset), prefix='Progress:', suffix='Complete', length=50)
+            progress_bar(len(query_arr), len(dataset), prefix='Progress:', suffix='Complete ('+model_name+')', length=50)
     duration = time.time() - start
     speed = len(query_arr) / duration
     print(f"Model: {model_name} - Time elapsed: {duration:.2f} seconds, speed: {speed:.2f} items/s")
