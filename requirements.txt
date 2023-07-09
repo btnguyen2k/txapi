@@ -4,4 +4,5 @@ tiktoken==0.4.0
 fastapi==0.97.0
 uvicorn[standard]==0.22.0
 langchain
-markdownify
+markdownify==0.11.6
+SentencePiece==0.1.99
