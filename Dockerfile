@@ -14,6 +14,7 @@ RUN cd /workspace && bash -c "source myenv/bin/activate && python _preload_hf_mo
 RUN cd /workspace && bash -c "source myenv/bin/activate && python _preload_hf_model.py sentence-transformers/all-mpnet-base-v2"
 RUN cd /workspace && bash -c "source myenv/bin/activate && python _preload_hf_model.py sentence-transformers/all-MiniLM-L12-v2"
 RUN cd /workspace && bash -c "source myenv/bin/activate && python _preload_hf_model.py sentence-transformers/all-MiniLM-L6-v2"
+RUN cd /workspace && bash -c "source myenv/bin/activate && python _preload_hf_model.py vinai/bartpho-syllable"
 
 FROM python:3.9-slim as txapi-runtime
 LABEL org.opencontainers.image.authors="Thanh Nguyen <btnguyen2k (at) gmail(dot)com>"
@@ -21,7 +22,6 @@ ARG USERNAME=api
 ARG USERID=1000
 RUN useradd --system --create-home --home-dir /workspace --shell /bin/bash --uid $USERID $USERNAME
 COPY --from=txapi-build --chown=$USERNAME /workspace /workspace
-#COPY --chown=$USERNAME *.py /workspace
 USER $USERNAME
 WORKDIR /workspace
 EXPOSE 8000
@@ -31,4 +31,3 @@ ENV PYTHONDONTWRITEBYTECODE 1
 # Prevents Python from buffering stdout and stderr (equivalent to python -u option)
 ENV PYTHONUNBUFFERED 1
 CMD ["bash", "-c", "source myenv/bin/activate && python server.py"]
-
