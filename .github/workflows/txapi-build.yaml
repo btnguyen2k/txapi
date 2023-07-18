@@ -4,6 +4,8 @@ on:
   # Automatically trigger it there are changes in repo
   push:
     branches: [ '*' ]
+    paths-ignore:
+      - '.github/dependabot.yaml'
   pull_request:
     branches: [ main ]
 
