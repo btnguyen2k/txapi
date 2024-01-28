@@ -1,4 +1,4 @@
-transformers==4.36.2
+transformers==4.37.1
 torch==2.1.2
 tiktoken==0.5.2
 fastapi==0.109.0
