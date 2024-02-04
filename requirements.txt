@@ -1,5 +1,5 @@
 transformers==4.37.1
-torch==2.1.2
+torch==2.2.0
 tiktoken==0.5.2
 fastapi==0.109.0
 uvicorn[standard]==0.27.0
