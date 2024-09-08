@@ -3,6 +3,6 @@ torch==2.4.1
 tiktoken==0.7.0
 fastapi==0.112.2
 uvicorn[standard]==0.30.6
-langchain==0.2.15
+langchain==0.2.16
 markdownify==0.13.1
 SentencePiece==0.2.0
