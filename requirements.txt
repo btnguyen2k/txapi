@@ -2,7 +2,7 @@ transformers==4.45.2
 torch==2.4.1
 tiktoken==0.8.0
 fastapi==0.115.0
-uvicorn[standard]==0.31.0
+uvicorn[standard]==0.31.1
 langchain==0.3.2
 markdownify==0.13.1
 SentencePiece==0.2.0
